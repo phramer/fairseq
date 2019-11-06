@@ -19,6 +19,9 @@ from fairseq.data import iterators
 from fairseq.trainer import Trainer
 from fairseq.meters import AverageMeter, StopwatchMeter
 
+from comet_ml import Experiment
+from getpass import getpass
+
 fb_pathmgr_registerd = False
 
 
@@ -80,6 +83,11 @@ def main(args, init_distributed=False):
     # corresponding train iterator
     extra_state, epoch_itr = checkpoint_utils.load_checkpoint(args, trainer)
 
+    comet_ml_api_key = getpass("comet.ml api key: ")
+    experiment = Experiment(api_key=comet_ml_api_key,
+                            project_name="phramer", workspace="sdll")
+
+
     # Train until the learning rate gets too small
     max_epoch = args.max_epoch or math.inf
     max_update = args.max_update or math.inf
@@ -108,6 +116,9 @@ def main(args, init_distributed=False):
         epoch_itr = trainer.get_train_iterator(epoch_itr.epoch, load_dataset=reload_dataset)
     train_meter.stop()
     print('| done training in {:.1f} seconds'.format(train_meter.sum))
+
+    experiment.log_metrics({'valid_loss': valid_losses[0]})
+    experiment.end()
 
 
 def train(args, trainer, task, epoch_itr):
