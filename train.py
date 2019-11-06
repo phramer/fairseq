@@ -25,7 +25,7 @@ from getpass import getpass
 fb_pathmgr_registerd = False
 
 
-def main(args, init_distributed=False):
+def main(args, init_distributed=False, logging=False):
     utils.import_user_module(args)
 
     try:
@@ -83,9 +83,10 @@ def main(args, init_distributed=False):
     # corresponding train iterator
     extra_state, epoch_itr = checkpoint_utils.load_checkpoint(args, trainer)
 
-    comet_ml_api_key = getpass("comet.ml api key: ")
-    experiment = Experiment(api_key=comet_ml_api_key,
-                            project_name="phramer", workspace="sdll")
+    if logging:
+        comet_ml_api_key = getpass("comet.ml api key: ")
+        experiment = Experiment(api_key=comet_ml_api_key,
+                                project_name="phramer", workspace="sdll")
 
 
     # Train until the learning rate gets too small
@@ -117,8 +118,9 @@ def main(args, init_distributed=False):
     train_meter.stop()
     print('| done training in {:.1f} seconds'.format(train_meter.sum))
 
-    experiment.log_metrics({'valid_loss': valid_losses[0]})
-    experiment.end()
+    if logging:
+        experiment.log_metrics({'valid_loss': valid_losses[0]})
+        experiment.end()
 
 
 def train(args, trainer, task, epoch_itr):
