@@ -87,7 +87,7 @@ def main(args, init_distributed=False, logging=False):
         comet_ml_api_key = getpass("comet.ml api key: ")
         experiment = Experiment(api_key=comet_ml_api_key,
                                 project_name="phramer", workspace="sdll")
-
+        experiment.log_parameters(vars(args))
 
     # Train until the learning rate gets too small
     max_epoch = args.max_epoch or math.inf
