@@ -88,6 +88,13 @@ def main(args, init_distributed=False, logging=False):
         experiment = Experiment(api_key=comet_ml_api_key,
                                 project_name="phramer", workspace="sdll")
         experiment.log_parameters(vars(args))
+        experiment.log_parameters({
+            "criterion": criterion.__class__.__name__,
+            "num. model params": sum(p.numel() for p in model.parameters()),
+            "num. trained params": sum(
+                p.numel() for p in model.parameters() if p.requires_grad
+            )
+        })
 
     # Train until the learning rate gets too small
     max_epoch = args.max_epoch or math.inf
@@ -119,7 +126,10 @@ def main(args, init_distributed=False, logging=False):
     print('| done training in {:.1f} seconds'.format(train_meter.sum))
 
     if logging:
-        experiment.log_metrics({'valid_loss': valid_losses[0]})
+        experiment.log_metrics({
+            'valid_loss': valid_losses[0],
+            'lr': lr
+        })
         experiment.end()
 
 
