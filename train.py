@@ -329,7 +329,8 @@ def cli_main():
     parser = options.get_training_parser()
     args = options.parse_args_and_arch(parser)
 
-    logging = args.logging is not None
+    # logging = args.logging is not None
+    logging = True
 
     if args.distributed_init_method is None:
         distributed_utils.infer_init_method(args)
