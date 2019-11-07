@@ -6,6 +6,7 @@
 """
 Train a new model on one or across multiple GPUs.
 """
+from comet_ml import Experiment
 
 import collections
 import math
@@ -19,7 +20,6 @@ from fairseq.data import iterators
 from fairseq.trainer import Trainer
 from fairseq.meters import AverageMeter, StopwatchMeter
 
-from comet_ml import Experiment
 from getpass import getpass
 
 fb_pathmgr_registerd = False
