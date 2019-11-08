@@ -32,7 +32,7 @@ from getpass import getpass
 fb_pathmgr_registerd = False
 
 
-def main(args, init_distributed=False):
+def main(args, init_distributed=False, experiment=None):
     utils.import_user_module(args)
 
     try:
@@ -60,17 +60,12 @@ def main(args, init_distributed=False):
     if distributed_utils.is_master(args):
         checkpoint_utils.verify_checkpoint_directory(args.save_dir)
 
-    # Print args
-
-    logging = args.logging
-    if logging:
-        comet_ml_api_key = getpass("Please enter the comet.ml API key: ")
-        experiment = Experiment(
-            api_key=comet_ml_api_key, project_name="phramer", workspace="sdll"
-        )
-        experiment.log_parameters(vars(args))
-
     print(args)
+    if experiment:
+        experiment.log_parameters(
+            vars(args),
+            tag="Device {}".format(0 if device_id not in args else args.device_id),
+        )
 
     # Setup task, e.g., translation, language modeling, etc.
     task = tasks.setup_task(args)
@@ -91,7 +86,7 @@ def main(args, init_distributed=False):
         )
     )
 
-    if logging:
+    if experiment:
         experiment.log_parameters(
             {
                 "criterion": criterion.__class__.__name__,
@@ -99,7 +94,8 @@ def main(args, init_distributed=False):
                 "num. trained params": sum(
                     p.numel() for p in model.parameters() if p.requires_grad
                 ),
-            }
+            },
+            tag="Device {}".format(0 if device_id not in args else args.device_id),
         )
 
     # Build trainer
@@ -153,9 +149,11 @@ def main(args, init_distributed=False):
     train_meter.stop()
     print("| done training in {:.1f} seconds".format(train_meter.sum))
 
-    if logging:
-        experiment.log_metrics({"valid_loss": valid_losses[0], "lr": lr})
-        experiment.end()
+    if experiment:
+        experiment.log_metrics(
+            {"valid_loss": valid_losses[0], "lr": lr},
+            tag="Device {} ".format(0 if device_id not in args else args.device_id),
+        )
 
 
 def train(args, trainer, task, epoch_itr, experiment=None):
@@ -221,9 +219,19 @@ def train(args, trainer, task, epoch_itr, experiment=None):
     stats = get_training_stats(trainer)
     for k, meter in extra_meters.items():
         stats[k] = meter.avg
-    progress.print(stats, tag="train", step=stats["num_updates"])
+    progress.print(
+        stats,
+        tag="Device {}".format(0 if device_id not in args else args.device_id),
+        prefix="train_",
+        step=stats["num_updates"],
+    )
     if experiment:
-        experiment.log_metrics(stats, step=stats["num_updates"], prefix="train")
+        experiment.log_metrics(
+            stats,
+            tag="Device {}".format(0 if device_id not in args else args.device_id),
+            prefix="train_",
+            step=stats["num_updates"],
+        )
 
     # reset training meters
     for k in [
@@ -372,6 +380,11 @@ def cli_main():
     args = options.parse_args_and_arch(parser)
 
     logging = args.logging
+    if logging:
+        comet_ml_api_key = getpass("Please enter the comet.ml API key: ")
+        experiment = Experiment(
+            api_key=comet_ml_api_key, project_name="phramer", workspace="sdll"
+        )
 
     if args.distributed_init_method is None:
         distributed_utils.infer_init_method(args)
@@ -402,6 +415,8 @@ def cli_main():
     else:
         # single GPU training
         main(args)
+    if experiment:
+        experiment.end()
 
 
 if __name__ == "__main__":
