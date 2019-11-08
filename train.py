@@ -32,7 +32,7 @@ from getpass import getpass
 fb_pathmgr_registerd = False
 
 
-def main(args, init_distributed=False, experiment=None):
+def main(args, experiment=None, init_distributed=False):
     utils.import_user_module(args)
 
     try:
@@ -365,11 +365,11 @@ def get_valid_stats(trainer, args, extra_meters=None):
     return stats
 
 
-def distributed_main(i, args, start_rank=0):
+def distributed_main(i, args, experiment=None, start_rank=0):
     args.device_id = i
     if args.distributed_rank is None:  # torch.multiprocessing.spawn
         args.distributed_rank = start_rank + i
-    main(args, init_distributed=True)
+    main(args, experiment=experiment, init_distributed=True)
 
 
 def cli_main():
@@ -385,6 +385,8 @@ def cli_main():
         experiment = Experiment(
             api_key=comet_ml_api_key, project_name="phramer", workspace="sdll"
         )
+    else:
+        experiment = None
 
     if args.distributed_init_method is None:
         distributed_utils.infer_init_method(args)
@@ -396,11 +398,11 @@ def cli_main():
             args.distributed_rank = None  # assign automatically
             torch.multiprocessing.spawn(
                 fn=distributed_main,
-                args=(args, start_rank),
+                args=(args, experiment, start_rank),
                 nprocs=torch.cuda.device_count(),
             )
         else:
-            distributed_main(args.device_id, args)
+            distributed_main(args.device_id, args, experiment)
     elif args.distributed_world_size > 1:
         # fallback for single node with multiple GPUs
         assert args.distributed_world_size <= torch.cuda.device_count()
@@ -410,11 +412,13 @@ def cli_main():
         if max(args.update_freq) > 1 and args.ddp_backend != "no_c10d":
             print("| NOTE: you may get better performance with: --ddp-backend=no_c10d")
         torch.multiprocessing.spawn(
-            fn=distributed_main, args=(args,), nprocs=args.distributed_world_size
+            fn=distributed_main,
+            args=(args, experiment),
+            nprocs=args.distributed_world_size,
         )
     else:
         # single GPU training
-        main(args)
+        main(args, experiment=experiment)
     if experiment:
         experiment.end()
 
