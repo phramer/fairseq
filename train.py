@@ -382,6 +382,7 @@ def cli_main():
         experiment = Experiment(
             api_key=comet_ml_api_key, project_name="phramer", workspace="sdll"
         )
+        print("Proceeding with Comet.ML logging...")
     else:
         experiment = None
 
@@ -409,7 +410,9 @@ def cli_main():
         if max(args.update_freq) > 1 and args.ddp_backend != "no_c10d":
             print("| NOTE: you may get better performance with: --ddp-backend=no_c10d")
         torch.multiprocessing.spawn(
-            fn=distributed_main, args=(args,), nprocs=args.distributed_world_size
+            fn=distributed_main,
+            args=(args, experiment),
+            nprocs=args.distributed_world_size,
         )
     else:
         # single GPU training
