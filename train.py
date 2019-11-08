@@ -62,10 +62,7 @@ def main(args, experiment=None, init_distributed=False):
 
     print(args)
     if experiment:
-        experiment.log_parameters(
-            vars(args),
-            tag="Device {}".format(0 if device_id not in args else args.device_id),
-        )
+        experiment.log_parameters(vars(args), tag="Device {}".format(args.device_id))
 
     # Setup task, e.g., translation, language modeling, etc.
     task = tasks.setup_task(args)
@@ -95,7 +92,7 @@ def main(args, experiment=None, init_distributed=False):
                     p.numel() for p in model.parameters() if p.requires_grad
                 ),
             },
-            tag="Device {}".format(0 if device_id not in args else args.device_id),
+            tag="Device {}".format(args.device_id),
         )
 
     # Build trainer
@@ -152,7 +149,7 @@ def main(args, experiment=None, init_distributed=False):
     if experiment:
         experiment.log_metrics(
             {"valid_loss": valid_losses[0], "lr": lr},
-            tag="Device {} ".format(0 if device_id not in args else args.device_id),
+            tag="Device {} ".format(args.device_id),
         )
 
 
@@ -221,14 +218,14 @@ def train(args, trainer, task, epoch_itr, experiment=None):
         stats[k] = meter.avg
     progress.print(
         stats,
-        tag="Device {}".format(0 if device_id not in args else args.device_id),
+        tag="Device {}".format(args.device_id),
         prefix="train_",
         step=stats["num_updates"],
     )
     if experiment:
         experiment.log_metrics(
             stats,
-            tag="Device {}".format(0 if device_id not in args else args.device_id),
+            tag="Device {}".format(args.device_id),
             prefix="train_",
             step=stats["num_updates"],
         )
@@ -365,6 +362,13 @@ def get_valid_stats(trainer, args, extra_meters=None):
     return stats
 
 
+def distributed_main(i, args, experiment=None, start_rank=0):
+    args.device_id = i
+    if args.distributed_rank is None:  # torch.multiprocessing.spawn
+        args.distributed_rank = start_rank + i
+    main(args, experiment=experiment, init_distributed=True)
+
+
 def cli_main():
     parser = options.get_training_parser()
     parser.add_argument(
@@ -381,12 +385,6 @@ def cli_main():
     else:
         experiment = None
 
-    def distributed_main(i, args, start_rank=0):
-        args.device_id = i
-        if args.distributed_rank is None:  # torch.multiprocessing.spawn
-            args.distributed_rank = start_rank + i
-        main(args, experiment=experiment, init_distributed=True)
-
     if args.distributed_init_method is None:
         distributed_utils.infer_init_method(args)
 
@@ -397,7 +395,7 @@ def cli_main():
             args.distributed_rank = None  # assign automatically
             torch.multiprocessing.spawn(
                 fn=distributed_main,
-                args=(args, start_rank),
+                args=(args, experiment, start_rank),
                 nprocs=torch.cuda.device_count(),
             )
         else:
@@ -411,9 +409,7 @@ def cli_main():
         if max(args.update_freq) > 1 and args.ddp_backend != "no_c10d":
             print("| NOTE: you may get better performance with: --ddp-backend=no_c10d")
         torch.multiprocessing.spawn(
-            fn=distributed_main,
-            args=(args, ),
-            nprocs=args.distributed_world_size,
+            fn=distributed_main, args=(args,), nprocs=args.distributed_world_size
         )
     else:
         # single GPU training
