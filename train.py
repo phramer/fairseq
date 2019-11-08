@@ -222,8 +222,8 @@ def train(args, trainer, task, epoch_itr, experiment=None):
     for k, meter in extra_meters.items():
         stats[k] = meter.avg
     progress.print(stats, tag="train", step=stats["num_updates"])
-        if experiment:
-            experiment.log_metrics(stats, step=stats["num_updates"], prefix="train")
+    if experiment:
+        experiment.log_metrics(stats, step=stats["num_updates"], prefix="train")
 
     # reset training meters
     for k in [
