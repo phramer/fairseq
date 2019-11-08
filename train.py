@@ -62,7 +62,9 @@ def main(args, experiment=None, init_distributed=False):
 
     print(args)
     if experiment:
-        experiment.log_parameters(vars(args), tag="Device {}".format(args.device_id))
+        experiment.log_parameters(
+            vars(args), prefix="Device {} :: ".format(args.device_id)
+        )
 
     # Setup task, e.g., translation, language modeling, etc.
     task = tasks.setup_task(args)
@@ -92,7 +94,7 @@ def main(args, experiment=None, init_distributed=False):
                     p.numel() for p in model.parameters() if p.requires_grad
                 ),
             },
-            tag="Device {}".format(args.device_id),
+            prefix="Device {} :: ".format(args.device_id),
         )
 
     # Build trainer
