@@ -32,9 +32,13 @@ from getpass import getpass
 fb_pathmgr_registerd = False
 
 
-def main(args, experiment=None, init_distributed=False):
+def main(args, config=None, init_distributed=False):
     utils.import_user_module(args)
-
+    experiment = None
+    if config:
+        experiment = ExistingExperiment(
+            api_key=config["api_key"], previous_experiment=config["experiment_key"]
+        )
     try:
         from fairseq.fb_pathmgr import fb_pathmgr
 
@@ -123,7 +127,7 @@ def main(args, experiment=None, init_distributed=False):
         and trainer.get_num_updates() < max_update
     ):
         # train for one epoch
-        train(args, trainer, task, epoch_itr)
+        train(args, trainer, task, epoch_itr, experiment)
 
         if (
             not args.disable_validation
@@ -364,11 +368,11 @@ def get_valid_stats(trainer, args, extra_meters=None):
     return stats
 
 
-def distributed_main(i, args, experiment=None, start_rank=0):
+def distributed_main(i, args, config=None, start_rank=0):
     args.device_id = i
     if args.distributed_rank is None:  # torch.multiprocessing.spawn
         args.distributed_rank = start_rank + i
-    main(args, experiment=experiment, init_distributed=True)
+    main(args, experiment=config, init_distributed=True)
 
 
 def cli_main():
@@ -379,14 +383,14 @@ def cli_main():
     args = options.parse_args_and_arch(parser)
 
     logging = args.logging
+    config = None
     if logging:
         comet_ml_api_key = getpass("Please enter the comet.ml API key: ")
         experiment = Experiment(
             api_key=comet_ml_api_key, project_name="phramer", workspace="sdll"
         )
+        config = {"api_key": comet_ml_api_key, "experiment_key": experiment.get_key()}
         print("Proceeding with Comet.ML logging...")
-    else:
-        experiment = None
 
     if args.distributed_init_method is None:
         distributed_utils.infer_init_method(args)
@@ -398,11 +402,11 @@ def cli_main():
             args.distributed_rank = None  # assign automatically
             torch.multiprocessing.spawn(
                 fn=distributed_main,
-                args=(args, experiment, start_rank),
+                args=(args, config, start_rank),
                 nprocs=torch.cuda.device_count(),
             )
         else:
-            distributed_main(args.device_id, args, experiment)
+            distributed_main(args.device_id, args, config)
     elif args.distributed_world_size > 1:
         # fallback for single node with multiple GPUs
         assert args.distributed_world_size <= torch.cuda.device_count()
@@ -412,14 +416,12 @@ def cli_main():
         if max(args.update_freq) > 1 and args.ddp_backend != "no_c10d":
             print("| NOTE: you may get better performance with: --ddp-backend=no_c10d")
         torch.multiprocessing.spawn(
-            fn=distributed_main,
-            args=(args, experiment),
-            nprocs=args.distributed_world_size,
+            fn=distributed_main, args=(args, config), nprocs=args.distributed_world_size
         )
     else:
         # single GPU training
-        main(args, experiment=experiment)
-    if experiment:
+        main(args, experiment=config)
+    if config:
         experiment.end()
 
 
