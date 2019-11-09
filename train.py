@@ -157,7 +157,7 @@ def main(args, config=None, init_distributed=False):
     if experiment:
         experiment.log_metrics(
             {"valid_loss": valid_losses[0], "lr": lr},
-            tag="Device {} ".format(args.device_id),
+            prefix="Device {} ".format(args.device_id),
         )
 
 
@@ -226,12 +226,7 @@ def train(args, trainer, task, epoch_itr, experiment=None):
         stats[k] = meter.avg
     progress.print(stats, tag="train", step=stats["num_updates"])
     if experiment:
-        experiment.log_metrics(
-            stats,
-            tag="Device {}".format(args.device_id),
-            prefix="train_",
-            step=stats["num_updates"],
-        )
+        experiment.log_metrics(stats, prefix="train_", step=stats["num_updates"])
 
     # reset training meters
     for k in [
