@@ -49,7 +49,7 @@ class ConcatDataset(FairseqDataset):
 
     def collater(self, samples):
         # For now only supports datasets with same underlying collater implementations
-        if hasattr(self.datasets[0], 'collater'):
+        if hasattr(self.datasets[0], "collater"):
             return self.datasets[0].collater(samples)
         else:
             return default_collate(samples)
@@ -94,6 +94,6 @@ class ConcatDataset(FairseqDataset):
         frm = 0
         for to, ds in zip(self.cumulative_sizes, self.datasets):
             real_size = len(ds)
-            if getattr(ds, 'supports_prefetch', False):
+            if getattr(ds, "supports_prefetch", False):
                 ds.prefetch([(i - frm) % real_size for i in indices if frm <= i < to])
             frm = to

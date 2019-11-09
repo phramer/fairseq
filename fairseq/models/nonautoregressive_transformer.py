@@ -63,14 +63,26 @@ class NATransformerModel(TransformerModel):
         )
 
         # length prediction
-        parser.add_argument("--src-embedding-copy", action="store_true",
-                            help="copy encoder word embeddings as the initial input of the decoder")
-        parser.add_argument("--pred-length-offset", action="store_true",
-                            help="predicting the length difference between the target and source sentences")
-        parser.add_argument("--sg-length-pred", action="store_true",
-                            help="stop the gradients back-propagated from the length predictor")
-        parser.add_argument("--length-loss-factor", type=float,
-                            help="weights on the length prediction loss")
+        parser.add_argument(
+            "--src-embedding-copy",
+            action="store_true",
+            help="copy encoder word embeddings as the initial input of the decoder",
+        )
+        parser.add_argument(
+            "--pred-length-offset",
+            action="store_true",
+            help="predicting the length difference between the target and source sentences",
+        )
+        parser.add_argument(
+            "--sg-length-pred",
+            action="store_true",
+            help="stop the gradients back-propagated from the length predictor",
+        )
+        parser.add_argument(
+            "--length-loss-factor",
+            type=float,
+            help="weights on the length prediction loss",
+        )
 
     @classmethod
     def build_decoder(cls, args, tgt_dict, embed_tokens):
@@ -127,7 +139,11 @@ class NATransformerModel(TransformerModel):
         output_tokens.masked_scatter_(output_masks, _tokens[output_masks])
         output_scores.masked_scatter_(output_masks, _scores[output_masks])
 
-        return {"output_tokens": output_tokens, "output_scores": output_scores, "attn": None}
+        return {
+            "output_tokens": output_tokens,
+            "output_scores": output_scores,
+            "attn": None,
+        }
 
     def initialize_output_tokens(self, encoder_out, src_tokens):
         # length prediction
@@ -151,7 +167,7 @@ class NATransformerModel(TransformerModel):
         return {
             "output_tokens": initial_output_tokens,
             "output_scores": initial_output_scores,
-            "attn": None
+            "attn": None,
         }
 
 
