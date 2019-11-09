@@ -224,12 +224,7 @@ def train(args, trainer, task, epoch_itr, experiment=None):
     stats = get_training_stats(trainer)
     for k, meter in extra_meters.items():
         stats[k] = meter.avg
-    progress.print(
-        stats,
-        tag="Device {}".format(args.device_id),
-        prefix="train_",
-        step=stats["num_updates"],
-    )
+    progress.print(stats, tag="train", step=stats["num_updates"])
     if experiment:
         experiment.log_metrics(
             stats,
