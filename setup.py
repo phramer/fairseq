@@ -124,6 +124,7 @@ setup(
         'sacrebleu',
         'torch',
         'tqdm',
+        'comet_ml'
     ],
     dependency_links=dependency_links,
     packages=find_packages(exclude=['scripts', 'tests']),
