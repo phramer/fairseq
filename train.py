@@ -6,7 +6,7 @@
 """
 Train a new model on one or across multiple GPUs.
 """
-from comet_ml import Experiment
+from comet_ml import Experiment, ExistingExperiment
 
 import collections
 import math
