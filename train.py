@@ -37,7 +37,9 @@ def main(args, config=None, init_distributed=False):
     experiment = None
     if config:
         experiment = ExistingExperiment(
-            api_key=config["api_key"], previous_experiment=config["experiment_key"]
+            api_key=config["api_key"],
+            previous_experiment=config["experiment_key"],
+            auto_output_logging=None,
         )
     try:
         from fairseq.fb_pathmgr import fb_pathmgr
@@ -387,7 +389,10 @@ def cli_main():
     if logging:
         comet_ml_api_key = getpass("Please enter the comet.ml API key: ")
         experiment = Experiment(
-            api_key=comet_ml_api_key, project_name="phramer", workspace="sdll"
+            api_key=comet_ml_api_key,
+            project_name="phramer",
+            workspace="sdll",
+            auto_output_logging=None,
         )
         config = {"api_key": comet_ml_api_key, "experiment_key": experiment.get_key()}
         print("Proceeding with Comet.ML logging...")
