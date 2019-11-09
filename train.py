@@ -372,7 +372,7 @@ def distributed_main(i, args, config=None, start_rank=0):
     args.device_id = i
     if args.distributed_rank is None:  # torch.multiprocessing.spawn
         args.distributed_rank = start_rank + i
-    main(args, experiment=config, init_distributed=True)
+    main(args, config=config, init_distributed=True)
 
 
 def cli_main():
@@ -420,7 +420,7 @@ def cli_main():
         )
     else:
         # single GPU training
-        main(args, experiment=config)
+        main(args, config=config)
     if config:
         experiment.end()
 
