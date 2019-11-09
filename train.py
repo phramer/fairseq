@@ -391,7 +391,7 @@ def cli_main():
         experiment = Experiment(
             api_key=comet_ml_api_key,
             project_name="phramer",
-            workspace="sdll",
+            workspace="phramer",
             auto_output_logging=None,
         )
         config = {"api_key": comet_ml_api_key, "experiment_key": experiment.get_key()}
