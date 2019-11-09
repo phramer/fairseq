@@ -135,7 +135,9 @@ def main(args, config=None, init_distributed=False):
             not args.disable_validation
             and epoch_itr.epoch % args.validate_interval == 0
         ):
-            valid_losses = validate(args, trainer, task, epoch_itr, valid_subsets)
+            valid_losses = validate(
+                args, trainer, task, epoch_itr, valid_subsets, experiment
+            )
         else:
             valid_losses = [None]
 
@@ -200,7 +202,9 @@ def train(args, trainer, task, epoch_itr, experiment=None):
             stats[k] = extra_meters[k].avg
         progress.log(stats, tag="train", step=stats["num_updates"])
         if experiment:
-            experiment.log_metrics(stats, step=stats["num_updates"], prefix="train")
+            experiment.log_metrics(
+                stats, step=stats["num_updates"], prefix="mid_epoch_train"
+            )
 
         # ignore the first mini-batch in words-per-second and updates-per-second calculation
         if i == 0:
@@ -226,7 +230,9 @@ def train(args, trainer, task, epoch_itr, experiment=None):
         stats[k] = meter.avg
     progress.print(stats, tag="train", step=stats["num_updates"])
     if experiment:
-        experiment.log_metrics(stats, prefix="train_", step=stats["num_updates"])
+        experiment.log_metrics(
+            stats, prefix="end_of_epoch_train", step=stats["num_updates"]
+        )
 
     # reset training meters
     for k in [
@@ -269,7 +275,7 @@ def get_training_stats(trainer):
     return stats
 
 
-def validate(args, trainer, task, epoch_itr, subsets):
+def validate(args, trainer, task, epoch_itr, subsets, experiment=None):
     """Evaluate the model on the validation set(s) and return the losses."""
 
     if args.fixed_validation_seed is not None:
@@ -321,6 +327,10 @@ def validate(args, trainer, task, epoch_itr, subsets):
         for k, meter in extra_meters.items():
             stats[k] = meter.avg
         progress.print(stats, tag=subset, step=trainer.get_num_updates())
+        if experiment:
+            experiment.log_metrics(
+                stats, prefix="validation_{}".format(subset), step=stats["num_updates"]
+            )
 
         valid_losses.append(
             stats[args.best_checkpoint_metric].avg
