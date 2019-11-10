@@ -32,6 +32,14 @@ from getpass import getpass
 def main(args, config=None, init_distributed=False):
     utils.import_user_module(args)
 
+    experiment = None
+    if config:
+        experiment = ExistingExperiment(
+            api_key=config["api_key"],
+            previous_experiment=config["experiment_key"],
+            auto_output_logging=None,
+        )
+
     assert (
         args.max_tokens is not None or args.max_sentences is not None
     ), "Must specify batch size either with --max-tokens or --max-sentences"
