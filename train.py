@@ -26,14 +26,12 @@ from fairseq import (
 from fairseq.data import iterators
 from fairseq.trainer import Trainer
 from fairseq.meters import AverageMeter, StopwatchMeter
-
 from getpass import getpass
-
-fb_pathmgr_registerd = False
 
 
 def main(args, config=None, init_distributed=False):
     utils.import_user_module(args)
+
     experiment = None
     if config:
         experiment = ExistingExperiment(
@@ -41,15 +39,6 @@ def main(args, config=None, init_distributed=False):
             previous_experiment=config["experiment_key"],
             auto_output_logging=None,
         )
-    try:
-        from fairseq.fb_pathmgr import fb_pathmgr
-
-        global fb_pathmgr_registerd
-        if not fb_pathmgr_registerd:
-            fb_pathmgr.register()
-            fb_pathmgr_registerd = True
-    except (ModuleNotFoundError, ImportError):
-        pass
 
     assert (
         args.max_tokens is not None or args.max_sentences is not None
