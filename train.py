@@ -26,6 +26,7 @@ from fairseq import (
 from fairseq.data import iterators
 from fairseq.trainer import Trainer
 from fairseq.meters import AverageMeter, StopwatchMeter
+from getpass import getpass
 
 
 def main(args, config=None, init_distributed=False):
