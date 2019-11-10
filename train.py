@@ -31,8 +31,9 @@ from fairseq.meters import AverageMeter, StopwatchMeter
 def main(args, config=None, init_distributed=False):
     utils.import_user_module(args)
 
-    assert args.max_tokens is not None or args.max_sentences is not None, \
-        'Must specify batch size either with --max-tokens or --max-sentences'
+    assert (
+        args.max_tokens is not None or args.max_sentences is not None
+    ), "Must specify batch size either with --max-tokens or --max-sentences"
 
     # Initialize CUDA and distributed training
     if torch.cuda.is_available() and not args.cpu:

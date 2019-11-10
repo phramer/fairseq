@@ -133,8 +133,11 @@ class MaskedLMTask(FairseqTask):
         dataset = PrependTokenDataset(dataset, self.source_dictionary.bos())
 
         # create masked input and targets
-        mask_whole_words = get_whole_word_mask(self.args, self.source_dictionary) \
-            if self.args.mask_whole_words else None
+        mask_whole_words = (
+            get_whole_word_mask(self.args, self.source_dictionary)
+            if self.args.mask_whole_words
+            else None
+        )
 
         src_dataset, tgt_dataset = MaskTokensDataset.apply_mask(
             dataset,

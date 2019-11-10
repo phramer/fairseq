@@ -42,6 +42,7 @@ def build_progress_bar(
             # [FB only] custom wrapper for TensorBoard
             import palaas  # noqa
             from fairseq.fb_tbmf_wrapper import fb_tbmf_wrapper
+
             bar = fb_tbmf_wrapper(bar, args, args.log_interval)
         except ImportError:
             bar = tensorboard_log_wrapper(bar, args.tensorboard_logdir, args)

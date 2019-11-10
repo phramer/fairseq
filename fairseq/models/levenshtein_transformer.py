@@ -349,7 +349,8 @@ class LevenshteinTransformerModel(TracingTransformerModel):
                 mask_ins_pred = mask_ins_score.max(-1)[1]
                 if max_ratio is not None and encoder_out[1] is not None:
                     mask_ins_pred = torch.min(
-                        mask_ins_pred, max_lengths[can_ins_mask, None].expand_as(mask_ins_pred)
+                        mask_ins_pred,
+                        max_lengths[can_ins_mask, None].expand_as(mask_ins_pred),
                     )
                 in_tokens = output_tokens[can_ins_mask]
                 in_scores = output_scores[can_ins_mask]
@@ -459,7 +460,6 @@ class LevenshteinTransformerModel(TracingTransformerModel):
             script_skip_tensor(output_tokens, can_ins_word),
             script_skip_tensor_list(encoder_out, can_ins_word),
         )
-
 
         output_tokens, output_scores, attn = ins_words(
             output_tokens,
