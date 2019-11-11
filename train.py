@@ -6,15 +6,16 @@
 """
 Train a new model on one or across multiple GPUs.
 """
-from comet_ml import Experiment, ExistingExperiment
-
 import collections
 import math
 import random
+from getpass import getpass
 
 import numpy as np
 import torch
+from comet_ml import ExistingExperiment, Experiment
 
+import keyring
 from fairseq import (
     checkpoint_utils,
     distributed_utils,
@@ -24,9 +25,8 @@ from fairseq import (
     utils,
 )
 from fairseq.data import iterators
-from fairseq.trainer import Trainer
 from fairseq.meters import AverageMeter, StopwatchMeter
-from getpass import getpass
+from fairseq.trainer import Trainer
 
 
 def main(args, config=None, init_distributed=False):
@@ -369,14 +369,20 @@ def distributed_main(i, args, config=None, start_rank=0):
 def cli_main():
     parser = options.get_training_parser()
     parser.add_argument(
-        "--logging", type=bool, metavar="D", help="Whether to log with comet.ml"
+        "--logging", action="store_true", help="Whether to use Comet.ML for logging"
     )
     args = options.parse_args_and_arch(parser)
 
-    logging = args.logging
+    logging = getattr(args, "logging", False)
     config = None
     if logging:
-        comet_ml_api_key = getpass("Please enter the comet.ml API key: ")
+        PROJECT = "phramer"
+        if not keyring.get_password("comet", PROJECT):
+            comet_ml_api_key = getpass("Please enter the comet.ml API key: ")
+            keyring.set_password("comet", PROJECT, comet_ml_api_key)
+        else:
+            comet_ml_api_key = keyring.get_password("comet", PROJECT)
+
         experiment = Experiment(
             api_key=comet_ml_api_key,
             project_name="phramer",

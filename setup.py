@@ -119,6 +119,7 @@ setup(
         "torch",
         "tqdm",
         "comet_ml",
+        "keyring",
     ],
     dependency_links=dependency_links,
     packages=find_packages(exclude=["scripts", "tests"]),
