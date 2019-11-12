@@ -486,10 +486,10 @@ if __name__ == "__main__":
     if args.distributed_port > 0 or args.distributed_init_method is not None:
         from distributed_train import main as distributed_main
 
-        distributed_main(args)
+        distributed_main(args, config=config)
     elif args.distributed_world_size > 1:
         from multiprocessing_train import main as multiprocessing_main
 
-        multiprocessing_main(args)
+        multiprocessing_main(args, config=config)
     else:
         main(args, config=config)
