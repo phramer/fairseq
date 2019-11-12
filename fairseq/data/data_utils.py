@@ -20,13 +20,15 @@ def infer_language_pair(path):
     """Infer language pair from filename: <split>.<lang1>-<lang2>.(...).idx"""
     src, dst = None, None
     for filename in os.listdir(path):
-        parts = filename.split('.')
-        if len(parts) >= 3 and len(parts[1].split('-')) == 2:
-            return parts[1].split('-')
+        parts = filename.split(".")
+        if len(parts) >= 3 and len(parts[1].split("-")) == 2:
+            return parts[1].split("-")
     return src, dst
 
 
-def collate_tokens(values, pad_idx, eos_idx=None, left_pad=False, move_eos_to_beginning=False):
+def collate_tokens(
+    values, pad_idx, eos_idx=None, left_pad=False, move_eos_to_beginning=False
+):
     """Convert a list of 1d tensors into a padded 2d tensor."""
     size = max(v.size(0) for v in values)
     res = values[0].new(len(values), size).fill_(pad_idx)
@@ -41,11 +43,13 @@ def collate_tokens(values, pad_idx, eos_idx=None, left_pad=False, move_eos_to_be
             dst.copy_(src)
 
     for i, v in enumerate(values):
-        copy_tensor(v, res[i][size - len(v):] if left_pad else res[i][:len(v)])
+        copy_tensor(v, res[i][size - len(v) :] if left_pad else res[i][: len(v)])
     return res
 
 
-def load_indexed_dataset(path, dictionary, dataset_impl=None, combine=False, default='cached'):
+def load_indexed_dataset(
+    path, dictionary, dataset_impl=None, combine=False, default="cached"
+):
     """A helper function for loading indexed datasets.
 
     Args:
@@ -64,7 +68,7 @@ def load_indexed_dataset(path, dictionary, dataset_impl=None, combine=False, def
 
     datasets = []
     for k in itertools.count():
-        path_k = path + (str(k) if k > 0 else '')
+        path_k = path + (str(k) if k > 0 else "")
 
         dataset_impl_k = dataset_impl
         if dataset_impl_k is None:
@@ -78,7 +82,7 @@ def load_indexed_dataset(path, dictionary, dataset_impl=None, combine=False, def
         )
         if dataset is None:
             break
-        print('| loaded {} examples from: {}'.format(len(dataset), path_k))
+        print("| loaded {} examples from: {}".format(len(dataset), path_k))
         datasets.append(dataset)
         if not combine:
             break
@@ -133,8 +137,10 @@ def _filter_by_size_dynamic(indices, size_fn, max_positions, raise_exception=Fal
             assert isinstance(idx_size, dict)
             intersect_keys = set(max_positions.keys()) & set(idx_size.keys())
             return all(
-                all(a is None or b is None or a <= b
-                    for a, b in zip(idx_size[key], max_positions[key]))
+                all(
+                    a is None or b is None or a <= b
+                    for a, b in zip(idx_size[key], max_positions[key])
+                )
                 for key in intersect_keys
             )
         else:
@@ -151,6 +157,7 @@ def _filter_by_size_dynamic(indices, size_fn, max_positions, raise_exception=Fal
                 a is None or b is None or a <= b
                 for a, b in zip(size_fn(idx), max_positions)
             )
+
     ignored = []
     itr = collect_filtered(check_size, indices, ignored)
     indices = np.fromiter(itr, dtype=np.int64, count=-1)
@@ -170,32 +177,45 @@ def filter_by_size(indices, dataset, max_positions, raise_exception=False):
             any elements are filtered (default: False).
     """
     if isinstance(max_positions, float) or isinstance(max_positions, int):
-        if hasattr(dataset, 'sizes') and isinstance(dataset.sizes, np.ndarray):
+        if hasattr(dataset, "sizes") and isinstance(dataset.sizes, np.ndarray):
             ignored = indices[dataset.sizes[indices] > max_positions].tolist()
             indices = indices[dataset.sizes[indices] <= max_positions]
-        elif hasattr(dataset, 'sizes') and isinstance(dataset.sizes, list) and len(dataset.sizes) == 1:
+        elif (
+            hasattr(dataset, "sizes")
+            and isinstance(dataset.sizes, list)
+            and len(dataset.sizes) == 1
+        ):
             ignored = indices[dataset.sizes[0][indices] > max_positions].tolist()
             indices = indices[dataset.sizes[0][indices] <= max_positions]
         else:
-            indices, ignored = _filter_by_size_dynamic(indices, dataset.size, max_positions)
+            indices, ignored = _filter_by_size_dynamic(
+                indices, dataset.size, max_positions
+            )
     else:
         indices, ignored = _filter_by_size_dynamic(indices, dataset.size, max_positions)
 
     if len(ignored) > 0 and raise_exception:
-        raise Exception((
-            'Size of sample #{} is invalid (={}) since max_positions={}, '
-            'skip this example with --skip-invalid-size-inputs-valid-test'
-        ).format(ignored[0], dataset.size(ignored[0]), max_positions))
+        raise Exception(
+            (
+                "Size of sample #{} is invalid (={}) since max_positions={}, "
+                "skip this example with --skip-invalid-size-inputs-valid-test"
+            ).format(ignored[0], dataset.size(ignored[0]), max_positions)
+        )
     if len(ignored) > 0:
-        print((
-            '| WARNING: {} samples have invalid sizes and will be skipped, '
-            'max_positions={}, first few sample ids={}'
-        ).format(len(ignored), max_positions, ignored[:10]))
+        print(
+            (
+                "| WARNING: {} samples have invalid sizes and will be skipped, "
+                "max_positions={}, first few sample ids={}"
+            ).format(len(ignored), max_positions, ignored[:10])
+        )
     return indices
 
 
 def batch_by_size(
-    indices, num_tokens_fn, max_tokens=None, max_sentences=None,
+    indices,
+    num_tokens_fn,
+    max_tokens=None,
+    max_sentences=None,
     required_batch_size_multiple=1,
 ):
     """
@@ -217,8 +237,8 @@ def batch_by_size(
         from fairseq.data.data_utils_fast import batch_by_size_fast
     except ImportError:
         raise ImportError(
-            'Please build Cython components with: `pip install --editable .` '
-            'or `python setup.py build_ext --inplace`'
+            "Please build Cython components with: `pip install --editable .` "
+            "or `python setup.py build_ext --inplace`"
         )
 
     max_tokens = max_tokens if max_tokens is not None else sys.maxsize
@@ -228,14 +248,16 @@ def batch_by_size(
     if isinstance(indices, types.GeneratorType):
         indices = np.fromiter(indices, dtype=np.int64, count=-1)
 
-    return batch_by_size_fast(indices, num_tokens_fn, max_tokens, max_sentences, bsz_mult)
+    return batch_by_size_fast(
+        indices, num_tokens_fn, max_tokens, max_sentences, bsz_mult
+    )
 
 
 def process_bpe_symbol(sentence: str, bpe_symbol: str):
-    if bpe_symbol == 'sentencepiece':
-        sentence = sentence.replace(' ', '').replace('\u2581', ' ').strip()
-    elif bpe_symbol == '_EOW':
-        sentence = sentence.replace(' ', '').replace('_EOW', ' ').strip()
+    if bpe_symbol == "sentencepiece":
+        sentence = sentence.replace(" ", "").replace("\u2581", " ").strip()
+    elif bpe_symbol == "_EOW":
+        sentence = sentence.replace(" ", "").replace("_EOW", " ").strip()
     elif bpe_symbol is not None:
-        sentence = (sentence + ' ').replace(bpe_symbol, '').rstrip()
+        sentence = (sentence + " ").replace(bpe_symbol, "").rstrip()
     return sentence

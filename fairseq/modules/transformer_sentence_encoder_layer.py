@@ -8,10 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from fairseq import utils
-from fairseq.modules import (
-    LayerNorm,
-    MultiheadAttention,
-)
+from fairseq.modules import LayerNorm, MultiheadAttention
 
 
 class TransformerSentenceEncoderLayer(nn.Module):
@@ -28,7 +25,7 @@ class TransformerSentenceEncoderLayer(nn.Module):
         dropout: float = 0.1,
         attention_dropout: float = 0.1,
         activation_dropout: float = 0.1,
-        activation_fn: str = 'relu',
+        activation_fn: str = "relu",
         add_bias_kv: bool = False,
         add_zero_attn: bool = False,
         export: bool = False,
@@ -48,7 +45,7 @@ class TransformerSentenceEncoderLayer(nn.Module):
             dropout=attention_dropout,
             add_bias_kv=add_bias_kv,
             add_zero_attn=add_zero_attn,
-            self_attention=True
+            self_attention=True,
         )
 
         # layer norm associated with the self attention layer

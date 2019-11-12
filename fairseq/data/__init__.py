@@ -9,13 +9,20 @@ from .fairseq_dataset import FairseqDataset
 
 from .base_wrapper_dataset import BaseWrapperDataset
 
+from .append_token_dataset import AppendTokenDataset
 from .audio.raw_audio_dataset import FileAudioDataset
 from .backtranslation_dataset import BacktranslationDataset
 from .colorize_dataset import ColorizeDataset
 from .concat_dataset import ConcatDataset
 from .concat_sentences_dataset import ConcatSentencesDataset
+from .denoising_dataset import DenoisingDataset
 from .id_dataset import IdDataset
-from .indexed_dataset import IndexedCachedDataset, IndexedDataset, IndexedRawTextDataset, MMapIndexedDataset
+from .indexed_dataset import (
+    IndexedCachedDataset,
+    IndexedDataset,
+    IndexedRawTextDataset,
+    MMapIndexedDataset,
+)
 from .language_pair_dataset import LanguagePairDataset
 from .list_dataset import ListDataset
 from .lm_context_window_dataset import LMContextWindowDataset
@@ -33,6 +40,7 @@ from .prepend_token_dataset import PrependTokenDataset
 from .raw_label_dataset import RawLabelDataset
 from .replace_dataset import ReplaceDataset
 from .resampling_dataset import ResamplingDataset
+from .roll_dataset import RollDataset
 from .round_robin_zip_datasets import RoundRobinZipDatasets
 from .sharded_dataset import ShardedDataset
 from .sort_dataset import SortDataset
@@ -42,7 +50,6 @@ from .token_block_dataset import TokenBlockDataset
 from .transform_eos_dataset import TransformEosDataset
 from .transform_eos_lang_pair_dataset import TransformEosLangPairDataset
 from .truncate_dataset import TruncateDataset
-from .resampling_dataset import ResamplingDataset
 
 from .iterators import (
     CountingIterator,
@@ -52,50 +59,53 @@ from .iterators import (
 )
 
 __all__ = [
-    'BacktranslationDataset',
-    'BaseWrapperDataset',
-    'ColorizeDataset',
-    'ConcatDataset',
-    'ConcatSentencesDataset',
-    'CountingIterator',
-    'Dictionary',
-    'EpochBatchIterator',
-    'FairseqDataset',
-    'GroupedIterator',
-    'IdDataset',
-    'IndexedCachedDataset',
-    'IndexedDataset',
-    'IndexedRawTextDataset',
-    'LanguagePairDataset',
-    'LeftPadDataset',
-    'ListDataset',
-    'LMContextWindowDataset',
-    'LRUCacheDataset',
-    'MaskTokensDataset',
-    'MMapIndexedDataset',
-    'MonolingualDataset',
-    'NestedDictionaryDataset',
-    'NoisingDataset',
-    'NumelDataset',
-    'NumSamplesDataset',
-    'OffsetTokensDataset',
-    'PadDataset',
-    'PrependDataset',
-    'PrependTokenDataset',
-    'ReplaceDataset',
-    'FileAudioDataset',
-    'RawLabelDataset',
-    'ResamplingDataset'
-    'RightPadDataset',
-    'RoundRobinZipDatasets',
-    'ShardedDataset',
-    'ShardedIterator',
-    'SortDataset',
-    'StripTokenDataset',
-    'SubsampleDataset',
-    'TokenBlockDataset',
-    'TransformEosDataset',
-    'TransformEosLangPairDataset',
-    'TruncateDataset',
-    'TruncatedDictionary',
+    "AppendTokenDataset",
+    "BacktranslationDataset",
+    "BaseWrapperDataset",
+    "ColorizeDataset",
+    "ConcatDataset",
+    "ConcatSentencesDataset",
+    "CountingIterator",
+    "DenoisingDataset",
+    "Dictionary",
+    "EpochBatchIterator",
+    "FairseqDataset",
+    "GroupedIterator",
+    "IdDataset",
+    "IndexedCachedDataset",
+    "IndexedDataset",
+    "IndexedRawTextDataset",
+    "LanguagePairDataset",
+    "LeftPadDataset",
+    "ListDataset",
+    "LMContextWindowDataset",
+    "LRUCacheDataset",
+    "MaskTokensDataset",
+    "MMapIndexedDataset",
+    "MonolingualDataset",
+    "NestedDictionaryDataset",
+    "NoisingDataset",
+    "NumelDataset",
+    "NumSamplesDataset",
+    "OffsetTokensDataset",
+    "PadDataset",
+    "PrependDataset",
+    "PrependTokenDataset",
+    "ReplaceDataset",
+    "RollDataset",
+    "FileAudioDataset",
+    "RawLabelDataset",
+    "ResamplingDataset",
+    "RightPadDataset",
+    "RoundRobinZipDatasets",
+    "ShardedDataset",
+    "ShardedIterator",
+    "SortDataset",
+    "StripTokenDataset",
+    "SubsampleDataset",
+    "TokenBlockDataset",
+    "TransformEosDataset",
+    "TransformEosLangPairDataset",
+    "TruncateDataset",
+    "TruncatedDictionary",
 ]

@@ -10,19 +10,11 @@ from fairseq.hub_utils import TokenizerHubInterface as tokenizer  # noqa
 from fairseq.models import MODEL_REGISTRY
 
 
-dependencies = [
-    'numpy',
-    'regex',
-    'requests',
-    'torch',
-]
+dependencies = ["numpy", "regex", "requests", "torch"]
 
 
 for _model_type, _cls in MODEL_REGISTRY.items():
     for model_name in _cls.hub_models().keys():
-        globals()[model_name] = functools.partial(
-            _cls.from_pretrained,
-            model_name,
-        )
+        globals()[model_name] = functools.partial(_cls.from_pretrained, model_name)
     # to simplify the interface we only expose named models
     # globals()[_model_type] = _cls.from_pretrained

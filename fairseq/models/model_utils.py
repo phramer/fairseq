@@ -110,9 +110,9 @@ def fill_tensors(x, mask, y, padding_idx: int):
     elif x.size(1) > y.size(1):
         x[mask] = torch.tensor(padding_idx).type_as(x)
         if x.dim() == 2:
-            x[mask, :y.size(1)] = y
+            x[mask, : y.size(1)] = y
         else:
-            x[mask, :y.size(1), :] = y
+            x[mask, : y.size(1), :] = y
     else:
         x[mask] = y
     return x
@@ -198,6 +198,6 @@ def _apply_del_words(
     if in_attn is not None:
         _mask = word_del_pred[:, :, None].expand_as(in_attn)
         _reordering = reordering[:, :, None].expand_as(in_attn)
-        out_attn = in_attn.masked_fill(_mask, 0.).gather(1, _reordering)
+        out_attn = in_attn.masked_fill(_mask, 0.0).gather(1, _reordering)
 
     return out_tokens, out_scores, out_attn

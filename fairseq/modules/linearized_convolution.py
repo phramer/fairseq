@@ -39,7 +39,7 @@ class LinearizedConvolution(ConvTBC):
             output = super().forward(input)
             if self.kernel_size[0] > 1 and self.padding[0] > 0:
                 # remove future timesteps added by padding
-                output = output[:-self.padding[0], :, :]
+                output = output[: -self.padding[0], :, :]
             return output
 
         # reshape weight
@@ -70,10 +70,12 @@ class LinearizedConvolution(ConvTBC):
             self._set_input_buffer(incremental_state, input_buffer)
 
     def _get_input_buffer(self, incremental_state):
-        return utils.get_incremental_state(self, incremental_state, 'input_buffer')
+        return utils.get_incremental_state(self, incremental_state, "input_buffer")
 
     def _set_input_buffer(self, incremental_state, new_buffer):
-        return utils.set_incremental_state(self, incremental_state, 'input_buffer', new_buffer)
+        return utils.set_incremental_state(
+            self, incremental_state, "input_buffer", new_buffer
+        )
 
     def _get_linearized_weight(self):
         if self._linearized_weight is None:

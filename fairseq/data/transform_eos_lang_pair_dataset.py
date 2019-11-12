@@ -49,12 +49,16 @@ class TransformEosLangPairDataset(FairseqDataset):
 
         # TODO: support different padding direction
         if self.new_src_eos is not None:
-            assert(samples['net_input']['src_tokens'][:, -1] != self.src_eos).sum() == 0
-            samples['net_input']['src_tokens'][:, -1] = self.new_src_eos
+            assert (
+                samples["net_input"]["src_tokens"][:, -1] != self.src_eos
+            ).sum() == 0
+            samples["net_input"]["src_tokens"][:, -1] = self.new_src_eos
 
         if self.new_tgt_bos is not None:
-            assert (samples['net_input']['prev_output_tokens'][:, 0] != self.tgt_bos).sum() == 0
-            samples['net_input']['prev_output_tokens'][:, 0] = self.new_tgt_bos
+            assert (
+                samples["net_input"]["prev_output_tokens"][:, 0] != self.tgt_bos
+            ).sum() == 0
+            samples["net_input"]["prev_output_tokens"][:, 0] = self.new_tgt_bos
 
         return samples
 
@@ -69,7 +73,7 @@ class TransformEosLangPairDataset(FairseqDataset):
 
     @property
     def supports_prefetch(self):
-        return getattr(self.dataset, 'supports_prefetch', False)
+        return getattr(self.dataset, "supports_prefetch", False)
 
     def prefetch(self, indices):
         return self.dataset.prefetch(indices)
