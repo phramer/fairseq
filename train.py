@@ -369,11 +369,13 @@ def distributed_main(i, args, config=None, start_rank=0):
 def cli_main():
     parser = options.get_training_parser()
     parser.add_argument(
-        "--logging", action="store_true", help="Whether to use Comet.ML for logging"
+        "--comet-logging",
+        action="store_true",
+        help="Whether to use Comet.ML for logging",
     )
     args = options.parse_args_and_arch(parser)
 
-    logging = getattr(args, "logging", False)
+    logging = getattr(args, "comet_logging", False)
     config = None
     if logging:
         PROJECT = "phramer"
