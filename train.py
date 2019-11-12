@@ -6,16 +6,18 @@
 """
 Train a new model on one or across multiple GPUs.
 """
+from comet_ml import ExistingExperiment, Experiment
+
 import collections
 import math
+
 import random
 from getpass import getpass
 
+import keyring
 import numpy as np
 import torch
-from comet_ml import ExistingExperiment, Experiment
 
-import keyring
 from fairseq import (
     checkpoint_utils,
     distributed_utils,
