@@ -59,13 +59,23 @@ def main(args, config=None):
     # Build model and criterion
     model = task.build_model(args)
     criterion = task.build_criterion(args)
-    print("| model {}, criterion {}".format(args.arch, criterion.__class__.__name__))
-    print("| num. model params: {}".format(sum(p.numel() for p in model.parameters())))
+    print(
+        "| model {}, criterion {}".format(
+            args.arch, criterion.__class__.__name__
+        )
+    )
+    print(
+        "| num. model params: {}".format(
+            sum(p.numel() for p in model.parameters())
+        )
+    )
     if experiment:
         experiment.log_parameters(
             {
                 "criterion": criterion.__class__.__name__,
-                "num. model params": sum(p.numel() for p in model.parameters()),
+                "num. model params": sum(
+                    p.numel() for p in model.parameters()
+                ),
                 "num. trained params": sum(
                     p.numel() for p in model.parameters() if p.requires_grad
                 ),
@@ -79,7 +89,9 @@ def main(args, config=None):
     max_positions = utils.resolve_max_positions(
         task.max_positions(), model.max_positions()
     )
-    dummy_batch = task.dataset("train").get_dummy_batch(dummy_batch_size, max_positions)
+    dummy_batch = task.dataset("train").get_dummy_batch(
+        dummy_batch_size, max_positions
+    )
 
     # Build trainer
     trainer = Trainer(args, task, model, criterion, dummy_batch)
@@ -125,7 +137,12 @@ def main(args, config=None):
 
         if epoch_itr.epoch % args.validate_interval == 0:
             valid_losses = validate(
-                args, trainer, task, epoch_itr, valid_subsets, experiment=experiment
+                args,
+                trainer,
+                task,
+                epoch_itr,
+                valid_subsets,
+                experiment=experiment,
             )
 
         # only use first validation loss to update the learning rate
@@ -153,7 +170,9 @@ def train(args, trainer, task, epoch_itr, experiment=None):
         update_freq = args.update_freq[-1]
 
     # Initialize data iterator
-    itr = epoch_itr.next_epoch_itr(fix_batches_to_gpus=args.fix_batches_to_gpus)
+    itr = epoch_itr.next_epoch_itr(
+        fix_batches_to_gpus=args.fix_batches_to_gpus
+    )
     itr = iterators.GroupedIterator(itr, update_freq)
     progress = progress_bar.build_progress_bar(
         args, itr, epoch_itr.epoch, no_progress_bar="simple"
@@ -170,7 +189,13 @@ def train(args, trainer, task, epoch_itr, experiment=None):
         # log mid-epoch stats
         stats = get_training_stats(trainer)
         for k, v in log_output.items():
-            if k in ["loss", "nll_loss", "ntokens", "nsentences", "sample_size"]:
+            if k in [
+                "loss",
+                "nll_loss",
+                "ntokens",
+                "nsentences",
+                "sample_size",
+            ]:
                 continue  # these are already logged above
             if "loss" in k:
                 extra_meters[k].update(v, log_output["sample_size"])
@@ -193,7 +218,9 @@ def train(args, trainer, task, epoch_itr, experiment=None):
             and num_updates % args.save_interval_updates == 0
             and num_updates > 0
         ):
-            valid_losses = validate(args, trainer, task, epoch_itr, [first_valid])
+            valid_losses = validate(
+                args, trainer, task, epoch_itr, [first_valid]
+            )
             save_checkpoint(args, trainer, epoch_itr, valid_losses[0])
 
         if num_updates >= max_update:
@@ -244,7 +271,9 @@ def get_training_stats(trainer):
     stats["clip"] = "{:.0%}".format(trainer.get_meter("clip").avg)
     stats["oom"] = trainer.get_meter("oom").avg
     if trainer.get_meter("loss_scale") is not None:
-        stats["loss_scale"] = "{:.3f}".format(trainer.get_meter("loss_scale").avg)
+        stats["loss_scale"] = "{:.3f}".format(
+            trainer.get_meter("loss_scale").avg
+        )
     stats["wall"] = round(trainer.get_meter("wall").elapsed_time)
     stats["train_wall"] = round(trainer.get_meter("train_wall").sum)
     return stats
@@ -322,7 +351,9 @@ def validate(args, trainer, task, epoch_itr, subsets, experiment=None):
         progress.print(stats)
         if experiment:
             experiment.log_metrics(
-                stats, prefix="validation_{}".format(subset), step=stats["num_updates"]
+                stats,
+                prefix="validation_{}".format(subset),
+                step=stats["num_updates"],
             )
 
         if len(misclassified) > 0:
@@ -396,7 +427,9 @@ def save_checkpoint(args, trainer, epoch_itr, val_loss):
     }
 
     checkpoints = [
-        os.path.join(args.save_dir, fn) for fn, cond in checkpoint_conds.items() if cond
+        os.path.join(args.save_dir, fn)
+        for fn, cond in checkpoint_conds.items()
+        if cond
     ]
     if len(checkpoints) > 0:
         for cp in checkpoints:
@@ -480,7 +513,10 @@ if __name__ == "__main__":
             workspace="phramer",
             auto_output_logging=None,
         )
-        config = {"api_key": comet_ml_api_key, "experiment_key": experiment.get_key()}
+        config = {
+            "api_key": comet_ml_api_key,
+            "experiment_key": experiment.get_key(),
+        }
         print("Proceeding with Comet.ML logging...")
 
     if args.distributed_port > 0 or args.distributed_init_method is not None:

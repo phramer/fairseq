@@ -77,6 +77,9 @@ if __name__ == "__main__":
             workspace="phramer",
             auto_output_logging=None,
         )
-        config = {"api_key": comet_ml_api_key, "experiment_key": experiment.get_key()}
+        config = {
+            "api_key": comet_ml_api_key,
+            "experiment_key": experiment.get_key(),
+        }
         print("Proceeding with Comet.ML logging...")
     main(args, config=config)

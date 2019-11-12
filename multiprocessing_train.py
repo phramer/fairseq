@@ -39,7 +39,9 @@ def main(args, config=None):
         args.distributed_rank = i
         args.device_id = i
         procs.append(
-            mp.Process(target=run, args=(args, error_queue, config), daemon=True)
+            mp.Process(
+                target=run, args=(args, error_queue, config), daemon=True
+            )
         )
         procs[i].start()
         error_handler.add_child(procs[i].pid)
@@ -70,7 +72,9 @@ class ErrorHandler(object):
 
         self.error_queue = error_queue
         self.children_pids = []
-        self.error_thread = threading.Thread(target=self.error_listener, daemon=True)
+        self.error_thread = threading.Thread(
+            target=self.error_listener, daemon=True
+        )
         self.error_thread.start()
         signal.signal(signal.SIGUSR1, self.signal_handler)
 
@@ -86,7 +90,9 @@ class ErrorHandler(object):
         for pid in self.children_pids:
             os.kill(pid, signal.SIGINT)  # kill children processes
         (rank, original_trace) = self.error_queue.get()
-        msg = "\n\n-- Tracebacks above this line can probably be ignored --\n\n"
+        msg = (
+            "\n\n-- Tracebacks above this line can probably be ignored --\n\n"
+        )
         msg += original_trace
         raise Exception(msg)
 
@@ -116,6 +122,9 @@ if __name__ == "__main__":
             workspace="phramer",
             auto_output_logging=None,
         )
-        config = {"api_key": comet_ml_api_key, "experiment_key": experiment.get_key()}
+        config = {
+            "api_key": comet_ml_api_key,
+            "experiment_key": experiment.get_key(),
+        }
         print("Proceeding with Comet.ML logging...")
     main(args, config=config)
