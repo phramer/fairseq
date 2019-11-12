@@ -5,26 +5,29 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree. An additional grant of patent rights
 # can be found in the PATENTS file in the same directory.
+from comet_ml import ExistingExperiment, Experiment
 
 import os
 import random
 import signal
+from getpass import getpass
+
+import keyring
 import torch
 
 from fairseq import distributed_utils, options
-
 from train import main as single_process_main
 
 
-def main(args):
+def main(args, config=None):
     # Set distributed training parameters for a single node.
     args.distributed_world_size = torch.cuda.device_count()
     port = random.randint(10000, 20000)
-    args.distributed_init_method = 'tcp://localhost:{port}'.format(port=port)
-    args.distributed_init_host = 'localhost'
+    args.distributed_init_method = "tcp://localhost:{port}".format(port=port)
+    args.distributed_init_host = "localhost"
     args.distributed_port = port + 1
 
-    mp = torch.multiprocessing.get_context('spawn')
+    mp = torch.multiprocessing.get_context("spawn")
 
     # Create a thread to listen for errors in the child processes.
     error_queue = mp.SimpleQueue()
@@ -35,22 +38,25 @@ def main(args):
     for i in range(args.distributed_world_size):
         args.distributed_rank = i
         args.device_id = i
-        procs.append(mp.Process(target=run, args=(args, error_queue, ), daemon=True))
+        procs.append(
+            mp.Process(target=run, args=(args, error_queue, config), daemon=True)
+        )
         procs[i].start()
         error_handler.add_child(procs[i].pid)
     for p in procs:
         p.join()
 
 
-def run(args, error_queue):
+def run(args, error_queue, config=None):
     try:
         args.distributed_rank = distributed_utils.distributed_init(args)
-        single_process_main(args)
+        single_process_main(args, config=config)
     except KeyboardInterrupt:
         pass  # killed by parent, do nothing
     except Exception:
         # propagate exception to parent process, keeping original traceback
         import traceback
+
         error_queue.put((args.distributed_rank, traceback.format_exc()))
 
 
@@ -61,6 +67,7 @@ class ErrorHandler(object):
     def __init__(self, error_queue):
         import signal
         import threading
+
         self.error_queue = error_queue
         self.children_pids = []
         self.error_thread = threading.Thread(target=self.error_listener, daemon=True)
@@ -84,7 +91,31 @@ class ErrorHandler(object):
         raise Exception(msg)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = options.get_training_parser()
+    parser.add_argument(
+        "--comet-logging",
+        action="store_true",
+        help="Whether to use Comet.ML for logging",
+    )
     args = options.parse_args_and_arch(parser)
-    main(args)
+
+    logging = getattr(args, "comet_logging", False)
+    config = None
+    if logging:
+        PROJECT = "phramer"
+        if not keyring.get_password("comet", PROJECT):
+            comet_ml_api_key = getpass("Please enter the comet.ml API key: ")
+            keyring.set_password("comet", PROJECT, comet_ml_api_key)
+        else:
+            comet_ml_api_key = keyring.get_password("comet", PROJECT)
+
+        experiment = Experiment(
+            api_key=comet_ml_api_key,
+            project_name="phramer",
+            workspace="phramer",
+            auto_output_logging=None,
+        )
+        config = {"api_key": comet_ml_api_key, "experiment_key": experiment.get_key()}
+        print("Proceeding with Comet.ML logging...")
+    main(args, config=config)
