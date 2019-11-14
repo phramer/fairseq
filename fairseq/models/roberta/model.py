@@ -295,17 +295,25 @@ class XLMRModel(RobertaModel):
         return RobertaHubInterface(x["args"], x["task"], x["models"][0])
 
 
-@register_model('camembert')
+@register_model("camembert")
 class CamembertModel(RobertaModel):
     @classmethod
     def hub_models(cls):
         return {
-            'camembert.v0': 'http://dl.fbaipublicfiles.com/fairseq/models/camembert.v0.tar.gz',
+            "camembert.v0": "http://dl.fbaipublicfiles.com/fairseq/models/camembert.v0.tar.gz"
         }
 
     @classmethod
-    def from_pretrained(cls, model_name_or_path, checkpoint_file='model.pt', data_name_or_path='.', bpe='sentencepiece', **kwargs):
+    def from_pretrained(
+        cls,
+        model_name_or_path,
+        checkpoint_file="model.pt",
+        data_name_or_path=".",
+        bpe="sentencepiece",
+        **kwargs,
+    ):
         from fairseq import hub_utils
+
         x = hub_utils.from_pretrained(
             model_name_or_path,
             checkpoint_file,
@@ -315,7 +323,7 @@ class CamembertModel(RobertaModel):
             load_checkpoint_heads=True,
             **kwargs,
         )
-        return RobertaHubInterface(x['args'], x['task'], x['models'][0])
+        return RobertaHubInterface(x["args"], x["task"], x["models"][0])
 
 
 class RobertaLMHead(nn.Module):
@@ -434,7 +442,9 @@ class RobertaEncoder(FairseqDecoder):
                 - a dictionary of additional data, where 'inner_states'
                   is a list of hidden states.
         """
-        x, extra = self.extract_features(src_tokens, return_all_hiddens)
+        x, extra = self.extract_features(
+            src_tokens, return_all_hiddens=return_all_hiddens
+        )
         if not features_only:
             x = self.output_layer(x, masked_tokens=masked_tokens)
         return x, extra
