@@ -242,6 +242,9 @@ class IterativeRefinementGenerator(object):
                 if decoder_out.history is not None
                 else None,
             )
+            encoder_out = model.encoder.reorder_encoder_out(
+                encoder_out, not_terminated.nonzero().squeeze()
+            )
             sent_idxs = sent_idxs[not_terminated]
 
             prev_output_tokens = prev_decoder_out.output_tokens.clone()
