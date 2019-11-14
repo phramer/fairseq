@@ -124,9 +124,6 @@ data-bin/
 /fairseq/data/data_utils_fast.cpp
 /fairseq/data/token_block_utils_fast.cpp
 
-.vscode/*
+# VSCODE
+.vscode/ftp-sync.json
 .vscode/settings.json
-.vscode/tasks.json
-.vscode/launch.json
-.vscode/extensions.json
-*.code-workspace
